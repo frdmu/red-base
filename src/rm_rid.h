@@ -15,7 +15,7 @@
 //
 // PageNum: uniquely identifies a page in a file
 //
-typedef int PageNum;
+typedef long long PageNum;
 
 //
 // SlotNum: uniquely identifies a record in a page
@@ -35,6 +35,8 @@ public:
     RC GetSlotNum(SlotNum &slotNum) const;         // Return slot number
 
 private:
+    PageNum pageNum;
+    SlotNum slotNum;
 };
 
 #endif
