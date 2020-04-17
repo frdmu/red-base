@@ -96,4 +96,5 @@ typedef char Boolean;
 #define NULL 0
 #endif
 
+#define TRY(_x) if (__rc = (_x)) return __rc;
 #endif
