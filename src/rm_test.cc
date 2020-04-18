@@ -32,10 +32,10 @@ using namespace std;
 //
 #define FILENAME   "testrel"         // test file name
 #define STRLEN      29               // length of string in testrec
-#define PROG_UNIT   50               // how frequently to give progress
+#define PROG_UNIT   500               // how frequently to give progress
                                       //   reports when adding lots of recs
 #define FEW_RECS   20                // number of records added in
-
+#define LOTS_OF_RECS 12345
 //
 // Computes the offset of a field in a record (should be in <stddef.h>)
 //
@@ -63,7 +63,8 @@ RM_Manager rmm(pfm);
 //
 RC Test1(void);
 RC Test2(void);
-
+RC Test3(void);
+RC Test4(void);
 void PrintError(RC rc);
 void LsFile(char *fileName);
 void PrintRecord(TestRec &recBuf);
@@ -83,11 +84,13 @@ RC GetNextRecScan(RM_FileScan &fs, RM_Record &rec);
 //
 // Array of pointers to the test functions
 //
-#define NUM_TESTS       2               // number of tests
+#define NUM_TESTS       4               // number of tests
 int (*tests[])() =                      // RC doesn't work on some compilers
 {
     Test1,
-    Test2
+    Test2,
+    Test3,
+    Test4
 };
 
 //
@@ -235,6 +238,7 @@ RC AddRecs(RM_FileHandle &fh, int numRecs)
     else
         putchar('\n');
 
+    printf("Page/Slot: %d %d\n", pageNum, slotNum);
     // Return ok
     return (0);
 }
@@ -260,8 +264,9 @@ RC VerifyFile(RM_FileHandle &fh, int numRecs)
     printf("\nverifying file contents\n");
 
     RM_FileScan fs;
+    int testVal = 0;
     if ((rc=fs.OpenScan(fh,INT,sizeof(int),offsetof(TestRec, num),
-                        NO_OP, NULL, NO_HINT)))
+                        NO_OP, (void *)&testVal, NO_HINT)))
         return (rc);
 
     // For each record in the file
@@ -486,6 +491,7 @@ RC Test2(void)
     if ((rc = CreateFile((char *)FILENAME, sizeof(TestRec))) ||
         (rc = OpenFile((char *)FILENAME, fh)) ||
         (rc = AddRecs(fh, FEW_RECS)) ||
+        (rc = VerifyFile(fh, FEW_RECS)) || 
         (rc = CloseFile((char *)FILENAME, fh)))
         return (rc);
 
@@ -495,5 +501,61 @@ RC Test2(void)
         return (rc);
 
     printf("\ntest2 done ********************\n");
+    return (0);
+}
+
+// 
+// Test3 tests adding a large number of records to a file.
+//
+RC Test3(void)
+{
+    RC  rc;
+    RM_FileHandle fh;
+
+    printf("test3 starting *******************\n");
+
+    if ((rc = CreateFile((char *)FILENAME, sizeof(TestRec))) ||
+        (rc = OpenFile((char *)FILENAME, fh)) ||
+        (rc = AddRecs(fh, LOTS_OF_RECS)) ||
+        (rc = VerifyFile(fh, LOTS_OF_RECS)) ||
+        (rc = CloseFile((char *)FILENAME, fh)))
+            return (rc);
+
+    LsFile((char *)FILENAME);
+
+    if ((rc = DestroyFile((char *)FILENAME)))
+            return (rc);
+
+    printf("\ntest3 done *********************\n");
+    return (0);
+}
+
+//
+// Test4 tests scanning the record
+//
+RC Test4(void)
+{
+    RC rc;
+    RM_FileHandle fh;
+
+    printf("test4 starting *******************\n");
+
+    if ((rc = CreateFile((char *)FILENAME, sizeof(TestRec))) ||
+        (rc = OpenFile((char *)FILENAME, fh)) ||
+        (rc = AddRecs(fh, FEW_RECS)) ||
+        (rc = VerifyFile(fh, FEW_RECS)))
+        return (rc);
+
+    RM_FileScan scan;
+    int numComp = 10;
+    TRY(scan.OpenScan(fh, INT, sizeof(int), offsetof(TestRec, num), NE_OP, (void*)&numComp));
+    //TRY(scan.OpenScan(fh, INT, sizeof(int), offsetof(TestRec, num), NO_OP, (void*)&numComp));
+    PrintFile(scan);
+
+    if ((rc = CloseFile((char *)FILENAME, fh)) ||
+        (rc = DestroyFile((char *)FILENAME)))
+        return (rc);
+
+    printf("\ntest4 done *********************\n");
     return (0);
 }

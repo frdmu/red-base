@@ -19,10 +19,10 @@ RC RM_FileScan::OpenScan(const RM_FileHandle &fileHandle, AttrType attrType, int
     this->compOp = compOp;
     switch (attrType) {
         case INT:
-            this->value.intVal = *(int *)&value;
+            this->value.intVal = *((int *)value);
             break;
         case FLOAT:
-            this->value.floatVal = *(float *)&value;
+            this->value.floatVal = *((float *)value);
             break;
         case STRING:
             if (value == NULL) this->value.stringVal = NULL;
@@ -95,7 +95,7 @@ RC RM_FileScan::CloseScan() {
 bool RM_FileScan::checkSatisfy(char *data) {
     switch(attrType) {
         case INT: {
-            int curVal = *(int *)(data + attrOffset);     
+            int curVal = *(int *)(data + attrOffset);    
             switch (compOp) {
                 case NO_OP:
 					return true;
