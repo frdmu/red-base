@@ -1,4 +1,6 @@
-<h2>Testing ...</h2>
+<h1> TEST  </h1>
+
+<h2>Test PF Component...</h2>
 <div>
 // build pf_test1 <br>
 $ g++ -c pf_test1.cc -o pf_test1.o <br>
@@ -27,4 +29,23 @@ $ g++ -c pf_test3.cc -o pf_test3.o <br>
 $ g++ pf_test3.o pf_manager.o pf_filehandle.o pf_pagehandle.o pf_buffermgr.o pf_hashtable.o pf_error.o -o test3 <br>
 // run test3 <br>
 $ ./test3<br>
+</div>
+
+<h2>test RM Component </h2>
+<div>
+// build rm_test <br>
+$g++ -c rm_test.cc -o rm_test.o <br>
+$g++ -c rm_rid.cc -o rm_rid.o <br>
+$g++ -c rm_record.cc -o rm_record.o<br>
+$g++ -c rm_filehandle.cc -o rm_filehandle.o <br>
+$g++ -c rm_filescan.cc -o rm_filescan.o <br>
+$g++ -c rm_manager.cc -o rm_manager.o <br>
+$g++ -c rm_error.cc -o rm_error.o <br>
+$g++ rm_test.o rm_filescan.o rm_manager.o rm_filehandle.o rm_record.o  <br>
+ rm_rid.o rm_error.o pf_manager.o pf_filehandle.o pf_pagehandle.o pf_buffermgr.o  <br>
+ pf_hashtable.o pf_error.o -o rm_test <br>
+</div>
+<div>
+// run rm_test <br>
+$./rm_test <br>
 </div>

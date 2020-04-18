@@ -1,5 +1,5 @@
 #include "rm.h"
-#include "rm_rid.h"
+//#include "rm_rid.h"
 
 static const int uninitializeRidNums = -1;
 
@@ -21,7 +21,7 @@ RC RID::GetPageNum(PageNum &pageNum) const {
 }
 
 RC RID::GetSlotNum(SlotNum &slotNum) const {
-	slotNum = this.slotNum;
+	slotNum = this->slotNum;
 	return slotNum == uninitializeRidNums ? RM_UNINITIALIZED_RID: 0;
 }
 
