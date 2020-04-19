@@ -264,9 +264,8 @@ RC VerifyFile(RM_FileHandle &fh, int numRecs)
     printf("\nverifying file contents\n");
 
     RM_FileScan fs;
-    int testVal = 0;
     if ((rc=fs.OpenScan(fh,INT,sizeof(int),offsetof(TestRec, num),
-                        NO_OP, (void *)&testVal, NO_HINT)))
+                        NO_OP, NULL, NO_HINT)))
         return (rc);
 
     // For each record in the file
