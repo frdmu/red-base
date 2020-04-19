@@ -47,9 +47,11 @@ $g++ rm_test.o rm_filescan.o rm_manager.o rm_filehandle.o rm_record.o  <br>
 </div>
 <div>
 // run rm_test <br>
-$./rm_test // test all the sample<br>
-$./rm_test 1// test the sample 1<br>
-$./rm_test 2// test the sample 2<br>
-$./rm_test 3// test the sample 3<br>
-$./rm_test 4// test the sample 4<br>
+$./rm_test          // test all the sample<br>
+$./rm_test 1        // test the sample 1<br>
+$./rm_test 2        // test the sample 2<br>
+$./rm_test 3        // test the sample 3<br>
+$./rm_test 4        // test the sample 4<br>
+$./rm_test 5        // test the sample 5<br>
+$./rm_test 6        // test the sample 6<br>
 </div>
