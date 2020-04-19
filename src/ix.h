@@ -12,7 +12,7 @@
 #include "redbase.h"
 #include "rm_rid.h"
 #include "pf.h"
-
+class IX_IndexHandle;
 //
 // IX_Manager: provides IX index file management
 //
