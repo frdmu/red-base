@@ -1,4 +1,5 @@
 #include <cstring>
+#include <cstddef>
 #include "pf.h"
 #include "rm.h"
 
@@ -26,8 +27,7 @@ RC RM_FileHandle::GetRec(const RID &rid, RM_Record &rec) const {
 	TRY(pageHandle.GetData(data));
 
 	rec.rid = rid;
-	rec.pData = new char[recordSize];
-	memcpy(rec.pData, data + pageHeaderSize + recordSize * slotNum, (size_t)recordSize);
+    rec.SetData(data + pageHeaderSize + recordSize * slotNum, (size_t)recordSize);	
 
 	TRY(pfHandle.UnpinPage(pageNum));
 	return 0;
@@ -61,8 +61,8 @@ RC RM_FileHandle::InsertRec(const char *pData, RID &rid) {
 			TRY(pageHandle.GetPageNum(pageNum));
 			TRY(pageHandle.GetData(data));	
 			*(RM_PageHeader *)data = {kLastFreeRecord, 0, kLastFreePage};
-			// ?	
-			memset(data + sizeof(RM_PageHeader) - 1, 0, pageHeaderSize - sizeof(RM_PageHeader) + 1);
+			// Initialize a new page	
+			memset(data + offsetof(RM_PageHeader, occupiedBitMap), 0, (size_t)recordsPerPage);
 		}
 		slotNum = ((RM_PageHeader *)data)->allocatedRecords;	
 		destination = data + pageHeaderSize + recordSize * slotNum;	

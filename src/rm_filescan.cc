@@ -78,8 +78,7 @@ RC RM_FileScan::GetNextRec(RM_Record &rec) {
     }
 
     rec.rid = RID(currentPageNum, currentSlotNum);
-    rec.pData = new char[recordSize];
-    memcpy(rec.pData, data + fileHandle->pageHeaderSize + recordSize * currentSlotNum, (size_t)recordSize);
+    rec.SetData(data + fileHandle->pageHeaderSize + recordSize * currentSlotNum, (size_t)recordSize); 
     ++currentSlotNum;
 
     return 0;
