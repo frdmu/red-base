@@ -88,7 +88,8 @@ RC RM_FileScan::GetNextRec(RM_Record &rec) {
 // ??
 RC RM_FileScan::CloseScan() {
 	if (!scanOpened) return RM_SCAN_NOT_OPENED;
-	if (attrType == STRING && value.stringVal != NULL)
+    scanOpened = FALSE;	
+    if (attrType == STRING && value.stringVal != NULL)
 		delete[] value.stringVal;
 	return 0;
 }
