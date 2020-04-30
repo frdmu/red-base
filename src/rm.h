@@ -40,8 +40,7 @@ public:
     RM_Record& operator=(const RM_Record&) = delete;
 
     void SetData(char *data, size_t size);
-    // ? 
-    void UpdateData(char *data, size_t size);
+    
     // Return the data corresponding to the record.  Sets *pData to the
     // record contents.
     RC GetData(char *&pData) const;

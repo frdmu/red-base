@@ -13,12 +13,19 @@ using namespace std;
 //
 // Error table
 //
-const char *SM_WarnMsg[] = {
-
+static const char *SM_WarnMsg[] = {
+	"relation already exists",
+	"relation does not exist",
+	"attribute does not exist for given relation",
+    "index already exists for given attribute",
+    "index does not exist for given attribute",     
+	"file to load has incorrect format",
+    "file not found",
 };
 
-const char *SM_ErrorMsg[] = {
-
+static const char *SM_ErrorMsg[] = {
+	"chdir command execution failed",
+    "database catalog file is corrupt",
 };
 
 //
