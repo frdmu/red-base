@@ -2,6 +2,8 @@
 //	sm_manager.cc
 
 #include <unistd.h>
+#include <stddef.h>
+#include <algorithm>
 #include "sm.h"
 #include "printer.h"
 

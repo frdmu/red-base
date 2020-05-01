@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <stddef.h>
 #include "rm.h"
 #include "sm.h"
 
