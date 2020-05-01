@@ -65,6 +65,12 @@ enum AttrType {
     STRING
 };
 
+// Attribute specifications
+enum AttrSpec {
+	ATTR_SPEC_NONE,
+	ATTR_SPEC_NOTNULL,
+	ATTR_SPEC_PRIMARYKEY,
+};
 //
 // Comparison operators
 //

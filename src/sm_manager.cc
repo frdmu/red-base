@@ -7,6 +7,8 @@
 #include "sm.h"
 #include "printer.h"
 
+static const int kCwdLen = 256;
+
 SM_Manager::SM_Manager(IX_Manager &ixm_, RM_Manager &rmm_) {
 	this->rmm = &rmm_;
 	this->ixm = &ixm_;
@@ -24,6 +26,7 @@ RC SM_Manager::OpenDb(const char *dbName) {
 RC SM_Manager::CloseDb() {
 	TRY(rmm->CloseFile(relcat));
 	TRY(rmm->CloseFile(attrcat));
+	if (chdir("..") != 0) return SM_CHDIR_FAILED;	
 	return 0;
 }
 
