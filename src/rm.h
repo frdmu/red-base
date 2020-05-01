@@ -23,6 +23,7 @@
 #include "pf.h"
 #include "rm_internal.h"
 #include <cstring>
+
 //
 // RM_Record: RM Record interface
 class RM_Record {

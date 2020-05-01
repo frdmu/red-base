@@ -54,4 +54,5 @@ $./rm_test 3        // test the sample 3<br>
 $./rm_test 4        // test the sample 4<br>
 $./rm_test 5        // test the sample 5<br>
 $./rm_test 6        // test the sample 6<br>
+$./rm_test 7        // test the sample 7<br>
 </div>

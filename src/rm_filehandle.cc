@@ -94,7 +94,7 @@ RC RM_FileHandle::DeleteRec(const RID &rid) {
 	if (getBitMap(((RM_PageHeader *)data)->occupiedBitMap, slotNum) == 0)
 		return RM_RECORD_DELETED;
 	setBitMap(((RM_PageHeader *)data)->occupiedBitMap, slotNum, false);	
-	*(short *)(data + pageHeaderSize + recordSize * slotNum) == ((RM_PageHeader *)data)->firstFreeRecord;	
+	*(short *)(data + pageHeaderSize + recordSize * slotNum) = ((RM_PageHeader *)data)->firstFreeRecord;	
 	// After delete rid, current page is first free page	
 	if (((RM_PageHeader *)data)->firstFreeRecord == kLastFreeRecord) {
  		((RM_PageHeader *)data)->nextFreePage = firstFreePage;		

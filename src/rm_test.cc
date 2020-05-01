@@ -67,6 +67,7 @@ RC Test3(void);
 RC Test4(void);
 RC Test5(void);
 RC Test6(void);
+RC Test7(void);
 void PrintError(RC rc);
 void LsFile(char *fileName);
 void PrintRecord(TestRec &recBuf);
@@ -86,7 +87,7 @@ RC GetNextRecScan(RM_FileScan &fs, RM_Record &rec);
 //
 // Array of pointers to the test functions
 //
-#define NUM_TESTS       6               // number of tests
+#define NUM_TESTS       7               // number of tests
 int (*tests[])() =                      // RC doesn't work on some compilers
 {
     Test1,
@@ -94,7 +95,8 @@ int (*tests[])() =                      // RC doesn't work on some compilers
     Test3,
     Test4,
     Test5,
-    Test6
+    Test6,
+	Test7
 };
 
 //
@@ -102,7 +104,7 @@ int (*tests[])() =                      // RC doesn't work on some compilers
 //
 int main(int argc, char *argv[])
 {
-    RC   rc;
+	RC   rc;
     char *progName = argv[0];   // since we will be changing argv
     int  testNum;
 
@@ -451,7 +453,32 @@ RC GetNextRecScan(RM_FileScan &fs, RM_Record &rec)
 {
     return (fs.GetNextRec(rec));
 }
+RC GetLastPositionOccupied(RM_FileHandle &fh, PageNum *pageNum, SlotNum *slotNum) {
+	RM_Record rec;
+	RM_FileScan	sc;
+	RID rid;
 
+	TRY(sc.OpenScan(fh, INT, sizeof(int), 0, NO_OP, NULL));
+	
+	*pageNum = 0, *slotNum = 0;
+
+	for (RC rc; rc = sc.GetNextRec(rec), rc != RM_EOF;) {
+		if (rc) {
+			return rc;
+		}
+		TRY(rec.GetRid(rid));
+		PageNum	x;
+		SlotNum y;
+		rid.GetPageNum(x);
+		rid.GetSlotNum(y);
+		if (*pageNum < x || (*pageNum == x && *slotNum < y)) {
+			*pageNum = x;
+			*slotNum = y;
+		}
+	}
+
+	return 0;
+}
 /////////////////////////////////////////////////////////////////////
 // Sample test functions follow.                                   //
 /////////////////////////////////////////////////////////////////////
@@ -635,7 +662,7 @@ RC Test5(void)
 }
 
 //
-// Test6 tests updating some records
+// Test6 tests deleting 
 RC Test6(void)
 {
     RC            rc;
@@ -643,27 +670,41 @@ RC Test6(void)
 
     printf("test6 starting ****************\n");
 
+	int m = 100;
+
     if ((rc = CreateFile((char *)FILENAME, sizeof(TestRec))) ||
         (rc = OpenFile((char *)FILENAME, fh)) ||
-        (rc = AddRecs(fh, FEW_RECS)) ||
-        (rc = VerifyFile(fh, FEW_RECS)))
+        (rc = AddRecs(fh, m)) ||
+        (rc = VerifyFile(fh, m)))
         return (rc);
 
     RM_Record rec;
     RM_FileScan sc;
 
     char searchStr[] = {"a8"};
+	RID rid;
 
-    // delete the record whose str = searchStr
-    TRY(sc.OpenScan(fh, STRING, strlen(searchStr), offsetof(TestRec, str),
-                EQ_OP, searchStr));
-    TRY(sc.GetNextRec(rec));
-    assert(sc.GetNextRec(rec) == RM_EOF);
-    TRY(sc.CloseScan());
+	TRY(sc.OpenScan(fh, STRING, strlen(searchStr), offsetof(TestRec, str), EQ_OP, searchStr));
+	while (rc = sc.GetNextRec(rec), rc != RM_EOF) {
+		if (rc) {
+			return rc;	
+		}
+		TestRec* data;
+		rec.GetData(CVOID(data));
+		PrintRecord(*data);
+		TRY(rec.GetRid(rid));	
+		TRY(fh.DeleteRec(rid));
+	} 
+	TRY(sc.CloseScan());
+	
+	//TRY(sc.OpenScan(fh, STRING, strlen(searchStr), offsetof(TestRec, str),
+     //          EQ_OP, searchStr));
+    //TRY(sc.GetNextRec(rec));
+    //assert(sc.GetNextRec(rec) == RM_EOF);
+    //TRY(sc.CloseScan());
 
-    RID rid;
-    TRY(rec.GetRid(rid));
-    TRY(fh.DeleteRec(rid));
+    //TRY(rec.GetRid(rid));
+    //TRY(fh.DeleteRec(rid));
 
     TRY(sc.OpenScan(fh, STRING, strlen(searchStr), offsetof(TestRec, str),
             EQ_OP, searchStr));
@@ -676,4 +717,112 @@ RC Test6(void)
 
     printf("\ntest6 done ********************\n");
     return (0);
+}
+
+//
+// Test7 tests reusing space of deleted records
+//
+RC Test7(void) {
+	RC	rc;
+	RM_FileHandle fh;
+
+	printf("test7 starting******************\n");
+	
+	int recsPerPage = 99; // calculated records per page; this might change
+	int pages = 5;
+	int recsToDel = 100;
+
+	int n = recsPerPage * pages;
+
+	printf("Insert records of %d pages, total %d\n", pages, n);
+	if ((rc = CreateFile((char *)FILENAME, sizeof(TestRec))) ||
+		(rc = OpenFile((char *)FILENAME, fh)) ||
+		(rc = AddRecs(fh, n)) ||
+		(rc = VerifyFile(fh, n))) {
+		return rc;	
+	}
+
+	PageNum x;
+	SlotNum y;
+
+	GetLastPositionOccupied(fh, &x, &y);
+	printf("Last position occupied = ( %d , %d)\n", x, y);
+	assert(x == pages);
+
+	RM_Record rec;
+	RM_FileScan sc;
+	RID rid;
+
+	printf("Delete first %d records\n", recsToDel);
+	TRY(sc.OpenScan(fh, INT, sizeof(INT), offsetof(TestRec, num), LT_OP, &recsToDel));
+	int count = 0;
+	for (RC rc; rc = sc.GetNextRec(rec), rc != RM_EOF;) {
+		if (rc) {
+			return rc;
+		}
+		TRY(rec.GetRid(rid));
+		TRY(fh.DeleteRec(rid));
+		++count;
+	}
+	assert(count == recsToDel);
+	TRY(sc.CloseScan());
+	
+	GetLastPositionOccupied(fh, &x, &y);
+	printf("Last position occupied = (%d , %d)\n", x, y);
+	assert(x == pages);
+
+	printf("Insert another %d records\n", recsToDel);
+	for (int i = 0; i < recsToDel; ++i) {
+		TestRec tr;
+		memset(tr.str, 0, sizeof(tr.str));
+		sprintf(tr.str, "n%d", i);
+		tr.num = i;
+		tr.r = (float)i;
+		TRY(fh.InsertRec((char *)&tr, rid));	
+	}
+
+	// the page used should not change
+	GetLastPositionOccupied(fh, &x, &y);
+	printf("Last position occupied = (%d, %d)\n", x, y);
+	assert(x == pages);
+	
+	int firstIndexDeleted = n - recsToDel;
+
+	printf("Delete last %d records\n", recsToDel);
+	TRY(sc.OpenScan(fh, INT, sizeof(int), offsetof(TestRec, num), GE_OP, &firstIndexDeleted));
+	count = 0;
+	for (RC rc; rc = sc.GetNextRec(rec), rc != RM_EOF; ) {
+		if (rc) {
+			return rc;
+		}
+		TRY(rec.GetRid(rid));
+		TRY(fh.DeleteRec(rid));
+		++count;
+	}
+	assert(count == recsToDel);
+	TRY(sc.CloseScan());
+
+	GetLastPositionOccupied(fh, &x, &y);
+	printf("Last position occupied = (%d, %d)\n", x, y);
+	printf("Insert another %d records\n", recsToDel);
+	for (int i = 0; i < recsToDel; i++) {
+		TestRec tr;
+		memset(tr.str, 0, sizeof(tr.str));
+		sprintf(tr.str, "m%d", i);
+		tr.num = i;
+		tr.r = (float)i;
+		TRY(fh.InsertRec((char *)&tr, rid));
+	}
+	
+	// the page used should not change
+	GetLastPositionOccupied(fh, &x, &y);
+	printf("Last position occupied = (%d, %d)\n", x, y);
+	assert(x == pages);
+	
+	if ((rc = CloseFile((char *)FILENAME, fh)) ||
+		(rc = DestroyFile((char *)FILENAME))) 
+		return rc;
+
+	printf("test7 done *****************\n");
+	return 0;
 }

@@ -1,7 +1,7 @@
 #include <cstring>
 #include "pf.h"
 #include "rm.h"
-
+#include "stddef.h"
 /* RM Manager */
 RM_Manager::RM_Manager(PF_Manager &pfm) {
 	this->pfm = &pfm;	
@@ -37,7 +37,7 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize) {
 	TRY(pageHandle.GetData(data));
 
 	*(RM_PageHeader *)data = {kLastFreeRecord, 0, kLastFreePage};
-	memset(data + sizeof(RM_PageHeader) - 1, 0, (size_t)((recordsPerPage + 3) & (~0x3)));// ?
+	memset(data + offsetof(RM_PageHeader, occupiedBitMap), 0, recordsPerPage);// ?
 
 	TRY(fileHandle.MarkDirty(1));
 	TRY(fileHandle.UnpinPage(1));
