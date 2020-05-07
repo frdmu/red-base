@@ -32,17 +32,22 @@ STATS_OPTION   = -DPF_STATS
 PF_SOURCES     = pf_buffermgr.cc pf_error.cc pf_filehandle.cc \
                  pf_pagehandle.cc pf_hashtable.cc pf_manager.cc \
 				 pf_statistics.cc statistics.cc
-TESTER_SOURCES = pf_test1.cc pf_test2.cc pf_test3.cc 
+RM_SOURCES	   = rm_filehandle.cc rm_filescan.cc rm_manager.cc \
+				 rm_record.cc rm_rid.cc rm_error.cc
+TESTER_SOURCES = pf_test1.cc pf_test2.cc pf_test3.cc rm_test.cc
 
 PF_OBJECTS     = $(addprefix $(BUILD_DIR), $(PF_SOURCES:.cc=.o))
+RM_OBJECTS     = $(addprefix $(BUILD_DIR), $(RM_SOURCES:.cc=.o))
 TESTER_OBJECTS = $(addprefix $(BUILD_DIR), $(TESTER_SOURCES:.cc=.o))
+OBJECTS        = $(PF_OBJECTS) $(RM_OBJECTS)
 
 LIBRARY_PF     = $(LIB_DIR)libpf.a
+LIBRARY_RM	   = $(LIB_DIR)librm.a
+LIBRARIES      = $(LIBRARY_PF) $(LIBRARY_RM)
+
+LIBS 			= -lrm -lpf
 
 TESTS          = $(TESTER_SOURCES:.cc=)
-
-LIBS 			= -lpf
-
 #
 # Build targets
 #
@@ -53,7 +58,7 @@ clean:
 	rm -f $(BUILD_DIR)*.o $(LIBRARY_PF)*.a $(TESTS)
 
 
-$(TESTS): %: $(BUILD_DIR)%.o $(LIBRARY_PF)
+$(TESTS): %: $(BUILD_DIR)%.o $(LIBRARIES)
 	$(CC) $(CFLAGS) $< -o $@ -L$(LIB_DIR) $(LIBS)
 
 
@@ -66,6 +71,9 @@ $(TESTER_OBJECTS): $(BUILD_DIR)%.o: %.cc
 $(LIBRARY_PF): $(PF_OBJECTS)
 	$(AR) $(LIBRARY_PF) $(PF_OBJECTS)
 	$(RANLIB) $(LIBRARY_PF)
+$(LIBRARY_RM): $(RM_OBJECTS)
+	$(AR) $(LIBRARY_RM) $(RM_OBJECTS)
+	$(RANLIB) $(LIBRARY_RM)
 
-$(PF_OBJECTS): $(BUILD_DIR)%.o: %.cc
+$(OBJECTS): $(BUILD_DIR)%.o: %.cc
 	$(CC) $(CFLAGS) -c $< -o $@
