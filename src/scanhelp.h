@@ -8,7 +8,7 @@
 
 /* buffer for string allocation */
 static char charpool[MAXCHAR];
-static in charptr = 0;
+static int charptr = 0;
 
 static int lower(char *dst, char *src, int max);
 static char *mk_string(char *s, int len);

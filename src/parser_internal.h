@@ -206,7 +206,7 @@ NODE *show_dbs_node();
 NODE *create_db_node(char *relname);
 NODE *drop_db_node(char *relname);
 NODE *use_db_node(char *relname);
-NODE *show_tables_node();
+NODE *show_table_node();
 NODE *create_table_node(char *relname, NODE *attrlist);
 NODE *create_index_node(char *relname, char *attrname);
 NODE *drop_index_node(char *relname, char *attrname);
