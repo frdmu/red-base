@@ -196,7 +196,7 @@ RC PF_FileHandle::GetPrevPage(PageNum current, PF_PageHandle &pageHandle) const
 // Desc: Get a specific page in a file
 //       The file handle must refer to an open file
 // In:   pageNum - the number of the page to get
-// Out:  pageHandle - becomes a handle to the this page of the file
+// Out:  pageHandle - becomes a handle to the page of the file
 //                    this function modifies local var's in pageHandle
 //       The referenced page is pinned in the buffer pool.
 // Ret:  PF return code

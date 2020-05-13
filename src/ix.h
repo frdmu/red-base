@@ -12,11 +12,14 @@
 #include "redbase.h"
 #include "rm_rid.h"
 #include "pf.h"
+#include "rm.h"
 class IX_IndexHandle;
 //
 // IX_Manager: provides IX index file management
 //
 class IX_Manager {
+	PF_Manager *pfm;
+	// RM_Manager rmm;
 public:
 	IX_Manager   (PF_Manager &pfm);              // Constructor
 	~IX_Manager  ();                             // Destructor
@@ -36,6 +39,36 @@ public:
 // IX_IndexHandle: IX Index File interface
 //
 class IX_IndexHandle {
+	friend class IX_Manager;
+	friend class IX_IndexScan;
+
+	PF_FileHandle pfHandle;
+	// RM_FileHandle rmHandle;
+
+	AttrType attrType;
+	int attrLength;
+	int firstFreePage;
+
+	bool isHeaderDirty;
+
+	// use attrType and attrLength to calculate the
+	// internal parameters
+	void __initialize();
+
+	int b; // branch factor
+	int entrySize;
+
+	int __cmp(void *lhs, void *rhs)const;
+	inline void *__get_entry(void *base, int n)const {
+		return (void*)((char*)base + entrySize * n);
+	}
+
+	RC new_page(int *nodeNum);
+	RC delete_page(int nodeNum);
+	
+	RC insert_internal(int nodeNum, void *pData, const RID &rid);
+	RC insert_leaf(int nodeNum, void *pData, const RID &rid);
+
 public:
 	IX_IndexHandle  ();                             // Constructor
 	~IX_IndexHandle ();                             // Destructor
@@ -48,6 +81,15 @@ public:
 // IX_IndexScan: condition-based scan of index entries
 //
 class IX_IndexScan {
+	const IX_IndexHandle *indexHandle;
+	compOp compOp;
+	void *value;
+	
+	bool scanOpened;
+	int currentNodeNum;
+	int currentEntryIndex;
+
+	bool __check(void *key);
 public:
 	IX_IndexScan  ();                                 // Constructor
 	~IX_IndexScan ();                                 // Destructor
@@ -64,11 +106,13 @@ public:
 //
 void IX_PrintError(RC rc);
 
-#define IX_SOMEWARNING    (START_IX_WARN + 0)  // cannot find key
-#define IX_LASTWARN IX_SOMEWARNING
+#define IX_EOF			(START_IX_WARN + 0)
+#define IX_KEY_EXISTS	(START_IX_WARN + 1)
+#define IX_SCAN_NOT_OPENED (START_IX_WARN + 2)
+#define IX_SCAN_NOT_CLOSED (START_IX_WARN + 3)
+#define IX_LASTWARN IX_SCAN_NOT_CLOSED
 
-
-#define IX_SOMEERROR      (START_IX_ERR - 0)  // key size too big
-#define IX_LASTERROR IX_SOMEERROR
+#define IX_ATTR_TOO_LARGE (START_IX_ERR - 0) 
+#define IX_LASTERROR IX_ATTR_TOO_LARGE
 
 #endif // IX_H

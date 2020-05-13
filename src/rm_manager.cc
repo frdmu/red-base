@@ -2,6 +2,8 @@
 #include "pf.h"
 #include "rm.h"
 #include "stddef.h"
+#include "rm_internal.h"
+#include <stddef.h>
 /* RM Manager */
 RM_Manager::RM_Manager(PF_Manager &pfm) {
 	this->pfm = &pfm;	

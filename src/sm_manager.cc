@@ -6,6 +6,8 @@
 #include <algorithm>
 #include "sm.h"
 #include "printer.h"
+#include <memory>
+#include <cassert>
 
 static const int kCwdLen = 256;
 

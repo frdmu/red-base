@@ -1,6 +1,7 @@
 #include <cstring>
 #include <cstdio>
 #include "rm.h"
+#include "rm_internal.h"
 #include <cassert>
 RM_FileScan::RM_FileScan() {
     scanOpened = FALSE;
