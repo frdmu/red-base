@@ -1,3 +1,4 @@
-<h1>A small dbms(https://web.stanford.edu/class/cs346/2014/project.html)</h1>
+<h1>A small dbms</h1>
+<p>(https://web.stanford.edu/class/cs346/2014/project.html)</p>
 <p>build</p>
 $make</br>
