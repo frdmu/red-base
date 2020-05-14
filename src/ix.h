@@ -47,6 +47,7 @@ class IX_IndexHandle {
 
 	AttrType attrType;
 	int attrLength;
+	int root;	
 	int firstFreePage;
 
 	bool isHeaderDirty;
@@ -63,11 +64,12 @@ class IX_IndexHandle {
 		return (void*)((char*)base + entrySize * n);
 	}
 
-	RC new_page(int *nodeNum);
-	RC delete_page(int nodeNum);
+	RC new_node(int *nodeNum);
+	RC delete_node(int nodeNum);
 	
-	RC insert_internal(int nodeNum, void *pData, const RID &rid);
-	RC insert_leaf(int nodeNum, void *pData, const RID &rid);
+	RC insert_entry(void *header, void *pData, const RID &rid);
+	RC insert_internal(int nodeNum, int *splitNode, void *pData, const RID &rid);
+	RC insert_leaf(int nodeNum, int *splitNode, void *pData, const RID &rid);
 
 public:
 	IX_IndexHandle  ();                             // Constructor

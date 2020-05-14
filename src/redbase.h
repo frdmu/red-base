@@ -107,4 +107,13 @@ typedef char Boolean;
 
 #define TRY(_x) if (int __rc = (_x)) return __rc;
 #define CVOID(_x) (*(reinterpret_cast<char**>(&(_x))))
+
+//#define ARR_PTR(_name, _type, _size)_type * _name = new_type[(size_t)_size]
+#ifdef __cplusplus
+template <int N, class T>
+inline T upper_align(T x) {
+    return (x + (N - 1)) & ~((unsigned)(N - 1));
+}
+#endif
+
 #endif

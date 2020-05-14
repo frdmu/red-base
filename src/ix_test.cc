@@ -7,7 +7,6 @@
 #include <cassert>
 #include <unistd.h>
 
-#include <glog/logging.h>
 
 const char* kFileName = "ixt";
 
@@ -16,11 +15,13 @@ const char* kFileName = "ixt";
 //
 RC Test1(void);
 RC Test2(void);
+RC Test3(void);
 
 int (*tests[])() =                      // RC doesn't work on some compilers
 {
     Test1,
     Test2,
+	Test3,
 };
 #define NUM_TESTS       ((int)((sizeof(tests)) / sizeof(tests[0])))    // number of tests
 
@@ -34,7 +35,7 @@ static void Test_PrintError(RC rc)
     else if (abs(rc) <= END_RM_WARN)
         IX_PrintError(rc);
     else
-        LOG(INFO) << "Error code out of range: " << rc << "\n";
+       	printf("Error code out of range: %d\n", rc); 
 }
 
 int main(int argc, char *argv[]) {
@@ -66,13 +67,14 @@ int main(int argc, char *argv[]) {
 
             // Make sure it's a number
             if (sscanf(*argv, "%d", &testNum) != 1) {
-                LOG(INFO) << progName << ": " << *argv << " is not a number\n";
+               	printf("%s: %s is not a number\n", progName, *argv); 
+				//LOG(INFO) << progName << ": " << *argv << " is not a number\n";
                 continue;
             }
 
             // Make sure it's in range
             if (testNum < 1 || testNum > NUM_TESTS) {
-                LOG(INFO) << "Valid test numbers are between 1 and " << NUM_TESTS << "\n";
+               	printf("Valid test numbers are between 1 and %d\n", NUM_TESTS); 
                 continue;
             }
 
@@ -87,7 +89,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Write ending message and exit
-    LOG(INFO) << "Ending IX component test.\n\n";
+ 	printf("Ending IX component test.\n\n"); 
 
     return 0;
 }
@@ -105,8 +107,8 @@ inline RC check_rid_eq(const RID &lhs, const RID &rhs) {
 }
 
 RC Test1() {
-    LOG(INFO) << "test1";
-    IX_IndexHandle ih;
+   	printf("test1\n"); 
+	IX_IndexHandle ih;
     // CHECK(ixm.CloseIndex(ih) != 0);
     TRY(ixm.CreateIndex(kFileName, 0, INT, 4));
     TRY(ixm.OpenIndex(kFileName, 0, ih));
@@ -117,8 +119,8 @@ RC Test1() {
 }
 
 RC Test2() {
-    LOG(INFO) << "test2";
-    IX_IndexHandle ih;
+   	printf("test2\n"); 
+	IX_IndexHandle ih;
     TRY(ixm.CreateIndex(kFileName, 1, INT, 4));
     TRY(ixm.OpenIndex(kFileName, 1, ih));
     RID rid0(0, 0), rid1(1, 1);
@@ -186,6 +188,40 @@ RC Test2() {
     TRY(check_rid_eq(rid, rid1));
     TRY(sc.GetNextEntry(rid));
     TRY(check_rid_eq(rid, rid0));
+    CHECK(sc.GetNextEntry(rid) == IX_EOF);
+    TRY(sc.CloseScan());
+
+    TRY(ixm.CloseIndex(ih));
+    TRY(ixm.DestroyIndex(kFileName, 1));
+    return 0;
+}
+
+RC Test3() {
+   	printf("test3\n"); 
+	IX_IndexHandle ih;
+    TRY(ixm.CreateIndex(kFileName, 1, INT, 4));
+    TRY(ixm.OpenIndex(kFileName, 1, ih));
+
+    auto rid_gen = [](int n) {
+        return RID(n, n);
+    };
+
+    const int n = 9;
+
+    for (int i = 0; i < n; ++i) {
+       	printf("insertentry i = %d\n", i); 
+        TRY(ih.InsertEntry(&i, rid_gen(i)));
+    }
+
+    IX_IndexScan sc;
+    TRY(sc.OpenScan(ih, NO_OP, NULL));
+    RID rid;
+
+    for (int i = 0; i < n; ++i) {
+       	printf("checkentry i = %d\n", i); 
+        TRY(sc.GetNextEntry(rid));
+        TRY(check_rid_eq(rid, rid_gen(i)));
+    }
     CHECK(sc.GetNextEntry(rid) == IX_EOF);
     TRY(sc.CloseScan());
 
